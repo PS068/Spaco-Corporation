@@ -1,10 +1,10 @@
 import { defineConfig, type HtmlTagDescriptor, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
-import siteConfiguration from './.figma/make/site.json' with { type: 'json' }
-
+const siteConfiguration = loadSiteConfiguration()
 
 // Vite config — https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -71,6 +71,18 @@ type FigmaSiteConfiguration = {
   }
   accessibility?: {
     addBypassLinks?: boolean
+  }
+}
+
+function loadSiteConfiguration(): FigmaSiteConfiguration {
+  const configPath = path.resolve(import.meta.dirname, './.figma/make/site.json')
+
+  if (!existsSync(configPath)) return {}
+
+  try {
+    return JSON.parse(readFileSync(configPath, 'utf8')) as FigmaSiteConfiguration
+  } catch (error) {
+    throw new Error(`Unable to read ${configPath}`, { cause: error })
   }
 }
 
